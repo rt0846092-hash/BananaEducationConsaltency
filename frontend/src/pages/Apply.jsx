@@ -4,8 +4,6 @@ import { api } from "../api";
 import { OFFICE } from "../config";
 import { useT } from "../i18n";
 
-// Stored in English whatever language the student reads, so staff can search
-// and report on one set of values.
 const QUALIFICATIONS = [
   "+2 / A-Levels", "Diploma", "Bachelor's degree", "Master's degree", "Other",
 ];
@@ -222,7 +220,7 @@ export default function Apply() {
                   onChange={(e) => setTwo({ ...two, highest_qualification: e.target.value })}
                 >
                   <option value="">{t("Choose one")}</option>
-                  {QUALIFICATIONS.map((q) => <option key={q} value={q}>{t(q)}</option>)}
+                  {QUALIFICATIONS.map((q) => <option key={q} value={q}>{q}</option>)}
                 </select>
               </div>
               <div>

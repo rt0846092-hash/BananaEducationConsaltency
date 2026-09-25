@@ -14,10 +14,8 @@ export default {
         urgent: "#B45309",
       },
       fontFamily: {
-        // Neither Bitter nor Public Sans has Devanagari, so Nepali text falls
-        // through to Noto Sans Devanagari instead of a random system font.
-        display: ["Bitter", "'Noto Sans Devanagari'", "Georgia", "serif"],
-        sans: ["'Public Sans'", "'Noto Sans Devanagari'", "system-ui", "sans-serif"],
+        display: ["Bitter", "Georgia", "serif"],
+        sans: ["'Public Sans'", "system-ui", "sans-serif"],
       },
       maxWidth: { prose: "68ch" },
     },

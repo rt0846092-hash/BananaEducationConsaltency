@@ -22,7 +22,7 @@ sees everything, plus the one number that matters — how many leads nobody has 
 
 | | Viewer | Student | Counsellor | Owner |
 |---|---|---|---|---|
-| Browse countries, universities, fees, classes (English or Nepali) | ✓ | ✓ | ✓ | ✓ |
+| Browse countries, universities, fees, classes | ✓ | ✓ | ✓ | ✓ |
 | Fill in the counselling form | | ✓ | | |
 | See and work on their own students | | | ✓ | ✓ (everyone) |
 | Add a walk-in / phone / referral student | | | ✓ (to themselves) | ✓ (to anyone) |
@@ -279,7 +279,6 @@ must be changed at first sign-in.
   are the first thing a competitor screenshots.
 - Fill in the privacy page template (`src/pages/Privacy.jsx`), have it checked, and remove
   its yellow notice. It is already linked from the consent checkbox and the footer.
-- Have someone at the office read the Nepali text once (`src/i18n.jsx`). Add `?lang=ne` to
-  QR links to open the form in Nepali.
+
 - Agree in writing how many content edits per month the retainer covers, or you will be
   adding universities for free at midnight.

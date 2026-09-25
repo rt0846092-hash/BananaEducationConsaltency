@@ -6,9 +6,15 @@ export const BUSY_MESSAGE =
   "Lots of people are using this network right now. Please call us on {phone} and we'll take your details.";
 
 async function request(path, options = {}) {
+  // Only requests with a body declare JSON. A plain GET without extra headers
+  // lets the browser skip its "may I?" preflight, which halves the requests on
+  // every public page — noticeable on a free server that is slow to wake up.
   const res = await fetch(`${BASE}${path}`, {
-    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
     ...options,
+    headers: {
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
+      ...(options.headers || {}),
+    },
   });
 
   if (res.status === 429) {

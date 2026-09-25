@@ -70,15 +70,12 @@ with sync_playwright() as p:
         pg.screenshot(path=f"{SHOTS}/viewer_country.png", full_page=True)
     check("Viewer", "Home destination card opens the country page", v_home_to_country)
 
-    def v_nepali():
+    def v_english_only():
         pg.goto(W + "/")
-        pg.get_by_role("button", name="नेपालीमा हेर्नुहोस्").click()
-        expect(pg.get_by_role("heading", name="तपाईं कहाँ पढ्न चाहनुहुन्छ?")).to_be_visible()
-        assert pg.evaluate("document.documentElement.lang") == "ne"
-        pg.screenshot(path=f"{SHOTS}/viewer_home_nepali.png", full_page=True)
-        pg.get_by_role("button", name="Switch to English").click()
-        expect(pg.get_by_role("heading", name="Where do you want to study?")).to_be_visible()
-    check("Viewer", "Nepali / English switch", v_nepali)
+        assert pg.get_by_role("button", name="नेपालीमा हेर्नुहोस्").count() == 0
+        pg.goto(W + "/apply?lang=ne")
+        expect(pg.get_by_role("heading", name="Free counselling")).to_be_visible()
+    check("Viewer", "English only (no language switch)", v_english_only)
 
     def v_privacy():
         pg.goto(W + "/privacy")
@@ -98,35 +95,35 @@ with sync_playwright() as p:
         check("Viewer", f"{path} needs sign-in", v_guard)
     c.close()
 
-    # ================= STUDENT (phone, Nepali QR link) =================
+    # ================= STUDENT (phone, QR link) =================
     c, pg = ctx(mobile=True)
 
-    def s_errors_in_nepali():
-        pg.goto(W + "/apply?src=fair-jan&country=1&lang=ne")
-        expect(pg.get_by_role("heading", name="निःशुल्क परामर्श")).to_be_visible()
-        pg.get_by_role("button", name="अगाडि बढ्नुहोस्").click()
-        expect(pg.get_by_text("यो खाली छोड्न मिल्दैन।")).to_be_visible(timeout=5000)
-        pg.screenshot(path=f"{SHOTS}/student_nepali_error.png", full_page=True)
-    check("Student", "Validation message shown in Nepali", s_errors_in_nepali)
+    def s_errors():
+        pg.goto(W + "/apply?src=fair-jan&country=1")
+        expect(pg.get_by_role("heading", name="Free counselling")).to_be_visible()
+        pg.get_by_role("button", name="Continue").click()
+        expect(pg.get_by_text("This field may not be blank.").first).to_be_visible(timeout=5000)
+        pg.screenshot(path=f"{SHOTS}/student_error.png", full_page=True)
+    check("Student", "Empty form shows a clear message", s_errors)
 
     def s_submit():
         pg.fill("#name", "Ramesh Karki")
         pg.fill("#phone", "+977 9841 555 777")
         pg.locator("#consent").check()
         assert pg.get_by_role("button", name="Australia").get_attribute("aria-pressed") == "true"
-        expect(pg.get_by_role("link", name="हामी तपाईंको विवरण कसरी प्रयोग गर्छौं")).to_be_visible()
-        pg.get_by_role("button", name="अगाडि बढ्नुहोस्").click()
-        expect(pg.get_by_text("तपाईंको बारेमा अलि बढी")).to_be_visible(timeout=5000)
+        expect(pg.get_by_role("link", name="How we use your details")).to_be_visible()
+        pg.get_by_role("button", name="Continue").click()
+        expect(pg.get_by_text("A little more about you")).to_be_visible(timeout=5000)
         pg.select_option("#qual", "Bachelor's degree")
         pg.fill("#year", "2023")
         pg.select_option("#test", "ielts")
         pg.fill("#score", "6.5")
-        pg.get_by_label("छ, तर अस्वीकृत भयो").check()
+        pg.get_by_label("Yes, and it was refused").check()
         pg.fill("#refused-where", "Australia")
-        pg.get_by_role("button", name="पूरा गर्नुहोस्").click()
-        expect(pg.get_by_text("तपाईंको विवरण हामीलाई प्राप्त भयो")).to_be_visible(timeout=5000)
-        pg.screenshot(path=f"{SHOTS}/student_done_nepali.png", full_page=True)
-    check("Student", "Two-step form completed in Nepali", s_submit)
+        pg.get_by_role("button", name="Finish").click()
+        expect(pg.get_by_text("We have your details")).to_be_visible(timeout=5000)
+        pg.screenshot(path=f"{SHOTS}/student_done.png", full_page=True)
+    check("Student", "Two-step form completed on a phone", s_submit)
     c.close()
 
     # ================= STAFF (counsellor) =================
@@ -258,7 +255,7 @@ with sync_playwright() as p:
         pg.select_option("#assign", label="Mingma Sherpa")
         pg.wait_for_timeout(800)
         assert pg.locator("#assign").input_value() == "3"
-    check("Admin", "Sees Nepali-form answers; reassigns to Mingma", a_student_detail)
+    check("Admin", "Sees the form answers; reassigns to Mingma", a_student_detail)
 
     def a_owner_add():
         pg.goto(W + "/staff/new")

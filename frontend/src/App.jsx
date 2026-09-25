@@ -28,7 +28,7 @@ function RequireLogin({ children }) {
 }
 
 function PublicHeader() {
-  const { t, lang, setLang } = useT();
+  const { t } = useT();
   return (
     <header className="border-b border-rule bg-white">
       <div className="wrap flex items-center justify-between gap-4 py-4">
@@ -39,14 +39,6 @@ function PublicHeader() {
           </span>
         </Link>
         <div className="flex items-center gap-5">
-          <button
-            onClick={() => setLang(lang === "ne" ? "en" : "ne")}
-            className="text-sm font-medium text-navy hover:text-grass"
-            lang={lang === "ne" ? "en" : "ne"}
-            aria-label={lang === "ne" ? "Switch to English" : "नेपालीमा हेर्नुहोस्"}
-          >
-            {lang === "ne" ? "English" : "नेपाली"}
-          </button>
           <a href={`tel:${OFFICE.phoneTel}`} className="hidden text-sm font-medium text-navy hover:text-grass sm:inline">
             {OFFICE.phone}
           </a>
