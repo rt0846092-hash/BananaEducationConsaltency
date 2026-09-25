@@ -85,6 +85,17 @@ TEMPLATES = [
 ]
 
 # One URL controls the database. mysql://... locally, postgres://... on Render.
+# In production a missing DATABASE_URL must stop the deploy: falling back to
+# SQLite on Render would look fine while silently losing every enquiry on the
+# next deploy.
+if not DEBUG and not os.getenv("DATABASE_URL") and os.getenv("ALLOW_SQLITE") != "True":
+    from django.core.exceptions import ImproperlyConfigured
+
+    raise ImproperlyConfigured(
+        "DATABASE_URL is not set. On Render: open the database, copy the Internal "
+        "Database URL, and add it to this service's Environment as DATABASE_URL."
+    )
+
 DATABASES = {
     "default": dj_database_url.config(
         default=os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
