@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { api } from "../api";
 import { OFFICE } from "../config";
 import { useT } from "../i18n";
+import { usePageMeta } from "../seo";
 
 const STEPS = [
   ["Tell us where you want to go", "One short form, or walk into the office."],
@@ -46,6 +47,10 @@ export default function Home() {
   const [batches, setBatches] = useState([]);
   const [counsellors, setCounsellors] = useState([]);
   const [failed, setFailed] = useState(false);
+  usePageMeta({
+    title: "Study abroad counselling in Kathmandu",
+    description: `Free counselling for studying in Australia, the USA, the UK, South Korea and Europe. Universities, fees, scholarships and IELTS/PTE classes at ${OFFICE.name}.`,
+  });
 
   useEffect(() => {
     Promise.all([api.countries(), api.batches(), api.counsellors()])

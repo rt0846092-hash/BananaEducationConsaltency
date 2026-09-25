@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api";
 import { useT } from "../i18n";
+import { usePageMeta } from "../seo";
 
 const money = (amount, currency) =>
   new Intl.NumberFormat("en-US", {
@@ -15,6 +16,16 @@ export default function CountryPage() {
     new Date(d).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" });
   const [country, setCountry] = useState(null);
   const [missing, setMissing] = useState(false);
+  usePageMeta(
+    missing
+      ? { title: "Destination not found", noindex: true }
+      : {
+          title: country ? `Study in ${country.name}: universities, fees and scholarships` : "",
+          description: country
+            ? `${country.summary} Compare ${country.universities.length} universities, course fees and scholarships, and get free counselling.`.slice(0, 160)
+            : "",
+        }
+  );
 
   useEffect(() => {
     setCountry(null);

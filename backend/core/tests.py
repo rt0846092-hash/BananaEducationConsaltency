@@ -770,3 +770,10 @@ class OwnerManagementTests(Base):
                    format="json")
         self.assertEqual(r.status_code, 200)
         self.assertFalse(Lead.objects.filter(pk=self.s_lead.pk).exists())
+
+
+class SearchEngineTests(TestCase):
+    def test_api_asks_search_engines_to_stay_out(self):
+        r = self.client.get("/robots.txt")
+        self.assertEqual(r.status_code, 200)
+        self.assertIn("Disallow: /", r.content.decode())

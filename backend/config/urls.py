@@ -1,7 +1,16 @@
 from django.contrib import admin
+from django.http import HttpResponse
 from django.urls import include, path
 
+
+def robots(request):
+    """The API and the Django admin login have no business in search results.
+    The public website has its own robots.txt that invites Google in."""
+    return HttpResponse("User-agent: *\nDisallow: /\n", content_type="text/plain")
+
+
 urlpatterns = [
+    path("robots.txt", robots),
     path("admin/", admin.site.urls),
     path("api/", include("core.urls")),
 ]

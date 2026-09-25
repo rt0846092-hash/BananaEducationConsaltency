@@ -17,6 +17,7 @@ import AddStudent from "./pages/AddStudent";
 import Privacy from "./pages/Privacy";
 import { clearToken, getToken, staffApi } from "./auth";
 import { useT } from "./i18n";
+import { usePageMeta } from "./seo";
 /* global __SAMPLE_NOTICE__ */
 import { OFFICE } from "./config";
 
@@ -55,6 +56,8 @@ function PublicHeader() {
 }
 
 function StaffHeader() {
+  // Nothing in the staff area belongs in Google.
+  usePageMeta({ title: "Staff area", noindex: true });
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [me, setMe] = useState(null);
@@ -122,6 +125,7 @@ function StaffHeader() {
 
 function NotFound() {
   const { t } = useT();
+  usePageMeta({ title: "Page not found", noindex: true });
   return (
     <div className="wrap max-w-prose py-24 text-center">
       <h1 className="text-3xl">{t("We couldn't find that page")}</h1>

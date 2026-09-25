@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { api } from "../api";
 import { OFFICE } from "../config";
 import { useT } from "../i18n";
+import { usePageMeta } from "../seo";
 
 const QUALIFICATIONS = [
   "+2 / A-Levels", "Diploma", "Bachelor's degree", "Master's degree", "Other",
@@ -16,6 +17,10 @@ export default function Apply() {
   const [token, setToken] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  usePageMeta({
+    title: "Free study abroad counselling",
+    description: "Three questions, thirty seconds. A counsellor calls you back within one working day — free, with no obligation to apply.",
+  });
 
   // ?country=3 comes from tapping a destination on the home page.
   // ?src=fair-jan comes from whichever printed QR code was scanned, so the

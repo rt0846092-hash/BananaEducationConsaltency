@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { OFFICE } from "../config";
+import { usePageMeta } from "../seo";
 
 /**
  * A plain-language privacy page, linked from the consent checkbox on the form.
@@ -25,6 +26,8 @@ function Section({ title, children }) {
 }
 
 export default function Privacy() {
+  usePageMeta({ title: "Privacy: how we use your details",
+                description: "What we collect when you ask for counselling, who can see it, and how to have it deleted." });
   return (
     <div className="wrap max-w-prose py-14">
       <div className="rounded-md border border-urgent/40 bg-urgent/5 p-4 text-sm text-urgent">
