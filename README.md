@@ -47,7 +47,7 @@ there for emergencies but the office never needs it.
    existing record instead of creating a second student.
 3. They're assigned automatically: to an active counsellor who handles one of their
    chosen countries, whoever has the fewest open students. Set which countries each
-   counsellor handles in the Django admin → Users. `AUTO_ASSIGN=False` turns this off.
+   counsellor handles on the Team page → Edit. `AUTO_ASSIGN=False` turns this off.
 4. The counsellor and owner get an email; the student gets a confirmation if they gave
    an email address. Emails never block or undo the save.
 
