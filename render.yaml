@@ -1,0 +1,52 @@
+# Render Blueprint: database + API + website in one go.
+# Render dashboard → New → Blueprint → pick this repo. You'll be asked for the
+# values marked `sync: false`.
+databases:
+  - name: banana-db
+    plan: free
+    databaseName: banana
+    user: banana
+
+services:
+  - type: web
+    name: banana-api
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: gunicorn config.wsgi:application
+    healthCheckPath: /api/countries/
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: DATABASE_URL
+        fromDatabase:
+          name: banana-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: CORS_ALLOWED_ORIGINS   # the website's address, e.g. https://banana-web.onrender.com
+        sync: false
+      - key: FRONTEND_URL           # same address; used in email links
+        sync: false
+      - key: AUTO_ASSIGN
+        value: "True"
+
+  - type: web
+    name: banana-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    # Send every path to the React app so /apply and /staff survive a refresh.
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL           # e.g. https://banana-api.onrender.com/api
+        sync: false
+      - key: VITE_DEMO_MODE
+        value: "false"

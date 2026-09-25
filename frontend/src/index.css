@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+  }
+  h1, h2, h3 {
+    @apply font-display text-navy-deep;
+  }
+  /* Keyboard focus must stay visible. Half this site's visitors are on a
+     phone, but the office staff use a laptop all day. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-grass ring-offset-2 ring-offset-paper;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md px-5 py-3
+           text-base font-medium transition-colors disabled:opacity-50
+           disabled:cursor-not-allowed;
+  }
+  .btn-go { @apply btn bg-grass text-white hover:bg-grass-dark; }
+  .btn-quiet { @apply btn border border-rule bg-white text-navy hover:border-navy-soft; }
+  .field {
+    @apply w-full rounded-md border border-rule bg-white px-4 py-3 text-base
+           text-ink placeholder:text-navy-soft/60 focus:border-grass;
+  }
+  .label { @apply mb-1.5 block text-sm font-medium text-navy; }
+  .wrap { @apply mx-auto w-full max-w-5xl px-5; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
