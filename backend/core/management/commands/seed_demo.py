@@ -121,7 +121,10 @@ class Command(BaseCommand):
 
         must_change = chosen is None
 
-        admin = User.objects.create_superuser(
+        # On a deployed site the owner account already exists (ensure_owner),
+        # so the sample founder isn't created alongside it.
+        existing_owner = User.objects.filter(role=User.Role.ADMIN).first()
+        admin = existing_owner or User.objects.create_superuser(
             username="admin", password=password_for("admin"), email="owner@banana.demo",
             first_name="Puja", last_name="Rana", role=User.Role.ADMIN,
             bio="Founder. Fifteen years placing students in Australia and the UK.",

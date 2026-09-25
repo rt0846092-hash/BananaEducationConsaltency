@@ -14,7 +14,7 @@ import AddStudent from "./pages/AddStudent";
 import Privacy from "./pages/Privacy";
 import { clearToken, getToken, staffApi } from "./auth";
 import { useT } from "./i18n";
-/* global __DEMO__ */
+/* global __SAMPLE_NOTICE__ */
 import { OFFICE } from "./config";
 
 /**
@@ -174,7 +174,7 @@ function PublicFooter() {
           </p>
         </div>
       </div>
-      {__DEMO__ && (
+      {__SAMPLE_NOTICE__ && (
         <div className="border-t border-white/10 py-4 text-center text-xs text-white/50">
           {t("Demonstration site. All universities, fees and students shown here are sample data.")}
         </div>

@@ -10,6 +10,11 @@ export default defineConfig(({ mode }) => {
       // build doesn't just hide the demo logins — it leaves them out of the
       // JavaScript entirely.
       __DEMO__: JSON.stringify(env.VITE_DEMO_MODE === "true"),
+      // Just the "these are sample universities and fees" notice, without the
+      // demo logins. For a public demo or before the client's content is in.
+      __SAMPLE_NOTICE__: JSON.stringify(
+        env.VITE_DEMO_MODE === "true" || env.VITE_SAMPLE_DATA === "true"
+      ),
     },
   };
 });
