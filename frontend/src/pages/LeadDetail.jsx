@@ -33,10 +33,6 @@ const shortDate = (d) =>
   new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 const dateTime = (d) =>
   new Date(d).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-const money = (n) =>
-  n == null || n === "" ? "" : new Intl.NumberFormat("en-US", {
-    style: "currency", currency: "USD", maximumFractionDigits: 0,
-  }).format(n);
 const fileSize = (b) =>
   b == null ? "" : b > 1024 * 1024 ? `${(b / 1024 / 1024).toFixed(1)} MB` : `${Math.ceil(b / 1024)} KB`;
 
@@ -197,14 +193,33 @@ function Applications({ lead, me, onChange, onError: raise }) {
                         {" · "}deadline {shortDate(a.deadline)}
                       </span>
                     )}
-                    {me?.is_admin && a.commission_expected && ` · ${money(a.commission_expected)}`}
                   </div>
                 </div>
-                <select className="field w-auto py-2 text-sm" value={a.status}
-                        aria-label={`Stage for ${a.university_name}`}
-                        onChange={(e) => update(a, { status: e.target.value })}>
-                  {APP_STATUSES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                </select>
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Owner only: added by a counsellor (who never sees this) or
+                      left blank at first, the figure can be filled in any time. */}
+                  {me?.is_admin && (
+                    <label className="flex items-center gap-1.5 text-sm text-navy-soft">
+                      Commission $
+                      <input
+                        type="number" min="0" step="1" className="field w-28 py-2 text-sm"
+                        aria-label={`Expected commission for ${a.university_name}`}
+                        placeholder="—"
+                        defaultValue={a.commission_expected != null ? Math.round(a.commission_expected) : ""}
+                        onBlur={(e) => {
+                          const v = e.target.value === "" ? null : e.target.value;
+                          const old = a.commission_expected != null ? String(Math.round(a.commission_expected)) : null;
+                          if (v !== old) update(a, { commission_expected: v });
+                        }}
+                      />
+                    </label>
+                  )}
+                  <select className="field w-auto py-2 text-sm" value={a.status}
+                          aria-label={`Stage for ${a.university_name}`}
+                          onChange={(e) => update(a, { status: e.target.value })}>
+                    {APP_STATUSES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                  </select>
+                </div>
               </li>
             );
           })}

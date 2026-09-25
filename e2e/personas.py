@@ -176,6 +176,8 @@ with sync_playwright() as p:
         pg.select_option("#app-status", "submitted")
         pg.get_by_role("button", name="Save application").click()
         expect(pg.locator("li", has_text="Kyung Hee University")).to_be_visible(timeout=5000)
+        assert pg.get_by_label("Expected commission for Kyung Hee University").count() == 0, \
+            "counsellor sees commission box"
         pg.get_by_label("Stage for Kyung Hee University").select_option("offer_conditional")
         expect(pg.get_by_text(re.compile("Submitted → Conditional offer"))).to_be_visible(timeout=5000)
     check("Staff", "Adds an application and moves it to an offer", st_application)
@@ -278,8 +280,15 @@ with sync_playwright() as p:
         pg.select_option("#uni", label="Deakin University")
         pg.fill("#app-commission", "2400")
         pg.get_by_role("button", name="Save application").click()
-        expect(pg.get_by_text("$2,400")).to_be_visible(timeout=5000)
-    check("Admin", "Owner records expected commission", a_commission)
+        box = pg.get_by_label("Expected commission for Deakin University")
+        expect(box).to_have_value("2400", timeout=5000)
+        # Change it later, straight from the list
+        box.fill("3100")
+        box.blur()
+        pg.wait_for_timeout(900)
+        pg.reload()
+        expect(pg.get_by_label("Expected commission for Deakin University")).to_have_value("3100", timeout=5000)
+    check("Admin", "Owner adds commission, then edits it from the list", a_commission)
 
     def a_team():
         pg.goto(W + "/staff/team")

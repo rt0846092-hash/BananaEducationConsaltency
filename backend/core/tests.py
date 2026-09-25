@@ -627,3 +627,22 @@ class MyAccountTests(Base):
         newbie = User.objects.create_user("newbie", password="Temp-pass-4821")
         r = self.as_user(newbie).patch("/api/me/", {"first_name": "X"}, format="json")
         self.assertEqual(r.status_code, 403)
+
+
+class CommissionEditTests(Base):
+    def test_only_owner_can_change_commission_later(self):
+        uni = University.objects.create(country=self.australia, name="Deakin")
+        app = Application.objects.create(lead=self.s_lead, university=uni)
+        self.as_user(self.sarita).patch(f"/api/applications/{app.pk}/",
+                                        {"commission_expected": "5000"}, format="json")
+        app.refresh_from_db()
+        self.assertIsNone(app.commission_expected)
+        self.as_user(self.admin).patch(f"/api/applications/{app.pk}/",
+                                       {"commission_expected": "2400"}, format="json")
+        app.refresh_from_db()
+        self.assertEqual(str(app.commission_expected), "2400.00")
+        r = self.as_user(self.admin).get("/api/reports/").json()
+        self.assertEqual(r["pipeline_value"], 0)          # still Draft: not counted
+        self.as_user(self.admin).patch(f"/api/applications/{app.pk}/",
+                                       {"status": "submitted"}, format="json")
+        self.assertEqual(float(self.as_user(self.admin).get("/api/reports/").json()["pipeline_value"]), 2400)
