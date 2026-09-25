@@ -585,3 +585,45 @@ class AccountTests(Base):
         u = User.objects.create_superuser("boss", "boss@example.com", "Some-pass-123")
         self.assertEqual(u.role, "admin")
         self.assertFalse(u.must_change_password)
+
+
+class MyAccountTests(Base):
+    def test_update_profile_without_password(self):
+        r = self.as_user(self.sarita).patch("/api/me/", {
+            "first_name": "Sarita", "last_name": "Joshi", "email": "s@example.com",
+            "bio": "Australia and UK.", "languages": "Nepali, English"}, format="json")
+        self.assertEqual(r.status_code, 200, r.content)
+        self.sarita.refresh_from_db()
+        self.assertEqual(self.sarita.email, "s@example.com")
+
+    def test_username_change_needs_current_password(self):
+        c = self.as_user(self.admin)
+        self.assertEqual(c.patch("/api/me/", {"username": "puja"}, format="json").status_code, 400)
+        self.assertEqual(c.patch("/api/me/", {"username": "puja", "current_password": "wrong"},
+                                 format="json").status_code, 400)
+        r = c.patch("/api/me/", {"username": "puja", "current_password": "pw-admin-123"},
+                    format="json")
+        self.assertEqual(r.json()["username"], "puja")
+        self.assertEqual(self.client.post("/api/auth/login/", {"username": "puja",
+                         "password": "pw-admin-123"}, format="json").status_code, 200)
+
+    def test_username_must_be_unique_and_valid(self):
+        c = self.as_user(self.admin)
+        r = c.patch("/api/me/", {"username": "SARITA", "current_password": "pw-admin-123"},
+                    format="json")
+        self.assertEqual(r.status_code, 400)
+        r = c.patch("/api/me/", {"username": "has space", "current_password": "pw-admin-123"},
+                    format="json")
+        self.assertEqual(r.status_code, 400)
+
+    def test_cannot_promote_yourself(self):
+        self.as_user(self.sarita).patch("/api/me/", {"role": "admin", "is_active": False,
+                                                      "auto_assign": False}, format="json")
+        self.sarita.refresh_from_db()
+        self.assertEqual(self.sarita.role, "counsellor")
+        self.assertTrue(self.sarita.is_active and self.sarita.auto_assign)
+
+    def test_temporary_password_blocks_profile_changes(self):
+        newbie = User.objects.create_user("newbie", password="Temp-pass-4821")
+        r = self.as_user(newbie).patch("/api/me/", {"first_name": "X"}, format="json")
+        self.assertEqual(r.status_code, 403)

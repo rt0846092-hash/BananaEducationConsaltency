@@ -31,7 +31,7 @@ from .models import (
 )
 from .permissions import IsAdmin
 from .serializers import (
-    ApplicationSerializer, BatchSerializer, CounsellorSerializer, CountryDetailSerializer,
+    AccountSerializer, ApplicationSerializer, BatchSerializer, CounsellorSerializer, CountryDetailSerializer,
     CountryListSerializer, DocumentSerializer, IntakeStepOneSerializer,
     IntakeStepTwoSerializer, LeadDetailSerializer, LeadListSerializer, NoteSerializer,
     StaffLeadCreateSerializer, UniversityOptionSerializer,
@@ -208,18 +208,38 @@ def lead_intake_details(request):
 # These two stay reachable while the flag is set — otherwise there would be no
 # way to clear it. Naming IsAuthenticated explicitly replaces the project
 # default, which includes PasswordIsSet.
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def me(request):
-    user = request.user
-    return Response({
+def _me_payload(user):
+    return {
         "id": user.id,
         "name": user.get_full_name() or user.username,
+        "username": user.username,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "email": user.email,
+        "phone": user.phone,
+        "bio": user.bio,
+        "languages": user.languages,
+        "is_public": user.is_public,
         "role": user.role,
         "is_admin": user.is_admin,
         "must_change_password": user.must_change_password,
         "documents_persistent": settings.DOCUMENTS_PERSISTENT,
-    })
+    }
+
+
+@api_view(["GET", "PATCH"])
+@permission_classes([IsAuthenticated])
+def me(request):
+    user = request.user
+    if request.method == "PATCH":
+        # Choose a real password before anything else can change.
+        if user.must_change_password:
+            return Response({"detail": "Set your own password before continuing."},
+                            status=status.HTTP_403_FORBIDDEN)
+        serializer = AccountSerializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+    return Response(_me_payload(user))
 
 
 @api_view(["POST"])

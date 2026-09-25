@@ -27,6 +27,7 @@ sees everything, plus the one number that matters — how many leads nobody has 
 | See and work on their own students | | | ✓ | ✓ (everyone) |
 | Add a walk-in / phone / referral student | | | ✓ (to themselves) | ✓ (to anyone) |
 | Log calls, change stage, set follow-ups, WhatsApp | | | ✓ | ✓ |
+| Change own username, name, email, bio and password (**My account**) | | | ✓ | ✓ |
 | Add university applications and move them through stages | | | ✓ | ✓ |
 | Upload, download and verify documents | | | ✓ | ✓ |
 | Record expected commission | | | | ✓ |

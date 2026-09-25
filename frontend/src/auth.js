@@ -100,6 +100,7 @@ export const staffApi = {
     return access;
   },
   me: () => authFetch("/me/"),
+  updateMe: (data) => authFetch("/me/", { method: "PATCH", body: JSON.stringify(data) }),
   changePassword: (data) =>
     authFetch("/auth/password/", { method: "POST", body: JSON.stringify(data) }),
   leads: (query = "") => authFetch(`/leads/${query}`),

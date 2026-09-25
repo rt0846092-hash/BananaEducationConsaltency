@@ -10,6 +10,7 @@ import LeadDetail from "./pages/LeadDetail";
 import Team from "./pages/Team";
 import Reports from "./pages/Reports";
 import ChangePassword from "./pages/ChangePassword";
+import Account from "./pages/Account";
 import AddStudent from "./pages/AddStudent";
 import Privacy from "./pages/Privacy";
 import { clearToken, getToken, staffApi } from "./auth";
@@ -92,8 +93,8 @@ function StaffHeader() {
           )}
         </div>
         <div className="flex items-center gap-5">
-          <Link to="/staff/password" className="text-sm text-white/70 hover:text-white">
-            Password
+          <Link to="/staff/account" className="text-sm text-white/70 hover:text-white">
+            {me ? `My account (${me.username})` : "My account"}
           </Link>
           <Link to="/" className="text-sm text-white/70 hover:text-white">
             View the site
@@ -194,6 +195,7 @@ export default function App() {
           <Route path="/staff/team" element={<RequireLogin><Team /></RequireLogin>} />
           <Route path="/staff/reports" element={<RequireLogin><Reports /></RequireLogin>} />
           <Route path="/staff/password" element={<RequireLogin><ChangePassword /></RequireLogin>} />
+          <Route path="/staff/account" element={<RequireLogin><Account /></RequireLogin>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

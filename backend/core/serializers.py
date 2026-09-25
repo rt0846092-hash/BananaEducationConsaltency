@@ -73,6 +73,40 @@ class BatchSerializer(serializers.ModelSerializer):
                   "schedule_note", "duration_weeks", "fee", "seats_left"]
 
 
+class AccountSerializer(serializers.ModelSerializer):
+    """What a signed-in person can change about themselves in the staff area.
+
+    Role, active status and auto-assignment stay with the owner — nobody
+    promotes themselves. A new username needs the current password, so a
+    colleague at an unlocked computer can't quietly take over the account.
+    """
+
+    current_password = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    is_public = serializers.BooleanField(required=False)
+
+    class Meta:
+        model = User
+        fields = ["username", "first_name", "last_name", "email", "phone", "bio",
+                  "languages", "is_public", "current_password"]
+
+    def validate_username(self, value):
+        value = value.strip()
+        taken = User.objects.filter(username__iexact=value).exclude(pk=self.instance.pk)
+        if taken.exists():
+            raise serializers.ValidationError("Someone already uses that username.")
+        return value
+
+    def validate(self, attrs):
+        new = attrs.get("username")
+        if new is not None and new != self.instance.username:
+            if not self.instance.check_password(attrs.get("current_password") or ""):
+                raise serializers.ValidationError(
+                    {"current_password": "Enter your current password to change your username."}
+                )
+        attrs.pop("current_password", None)
+        return attrs
+
+
 class CounsellorSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
 
