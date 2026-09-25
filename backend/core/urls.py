@@ -1,7 +1,18 @@
-from django.urls import path
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from . import views
+from . import owner_api, views
+
+# Owner-only management (staff and website content) — see core/owner_api.py
+owner = DefaultRouter(trailing_slash=True)
+owner.include_root_view = False
+owner.register("staff", owner_api.StaffViewSet, basename="staff")
+owner.register("countries", owner_api.CountryAdminViewSet, basename="manage-country")
+owner.register("universities", owner_api.UniversityAdminViewSet, basename="manage-university")
+owner.register("courses", owner_api.CourseAdminViewSet, basename="manage-course")
+owner.register("scholarships", owner_api.ScholarshipAdminViewSet, basename="manage-scholarship")
+owner.register("batches", owner_api.BatchAdminViewSet, basename="manage-batch")
 
 urlpatterns = [
     # Public — no login required
@@ -33,4 +44,6 @@ urlpatterns = [
     path("team/handover/", views.handover),
     path("reports/", views.reports),
     path("leads/export/", views.export_leads),
+    path("leads/<int:pk>/delete/", views.delete_lead),
+    path("manage/", include(owner.urls)),
 ]

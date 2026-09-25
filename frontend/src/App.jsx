@@ -11,6 +11,8 @@ import Team from "./pages/Team";
 import Reports from "./pages/Reports";
 import ChangePassword from "./pages/ChangePassword";
 import Account from "./pages/Account";
+import StaffEdit from "./pages/StaffEdit";
+import Content from "./pages/Content";
 import AddStudent from "./pages/AddStudent";
 import Privacy from "./pages/Privacy";
 import { clearToken, getToken, staffApi } from "./auth";
@@ -89,6 +91,7 @@ function StaffHeader() {
               <NavLink to="/staff" end className={tab}>Students</NavLink>
               {me.is_admin && <NavLink to="/staff/team" className={tab}>Team</NavLink>}
               {me.is_admin && <NavLink to="/staff/reports" className={tab}>Reports</NavLink>}
+              {me.is_admin && <NavLink to="/staff/content" className={tab}>Website</NavLink>}
             </nav>
           )}
         </div>
@@ -193,6 +196,9 @@ export default function App() {
           <Route path="/staff/new" element={<RequireLogin><AddStudent /></RequireLogin>} />
           <Route path="/staff/leads/:id" element={<RequireLogin><LeadDetail /></RequireLogin>} />
           <Route path="/staff/team" element={<RequireLogin><Team /></RequireLogin>} />
+          <Route path="/staff/team/new" element={<RequireLogin><StaffEdit /></RequireLogin>} />
+          <Route path="/staff/team/:id" element={<RequireLogin><StaffEdit /></RequireLogin>} />
+          <Route path="/staff/content" element={<RequireLogin><Content /></RequireLogin>} />
           <Route path="/staff/reports" element={<RequireLogin><Reports /></RequireLogin>} />
           <Route path="/staff/password" element={<RequireLogin><ChangePassword /></RequireLogin>} />
           <Route path="/staff/account" element={<RequireLogin><Account /></RequireLogin>} />

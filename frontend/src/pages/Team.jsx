@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { staffApi } from "../auth";
 
 function Handover({ person, team, onDone, onCancel }) {
@@ -87,15 +87,18 @@ function Handover({ person, team, onDone, onCancel }) {
 
 export default function Team() {
   const [team, setTeam] = useState([]);
+  const [closed, setClosed] = useState([]);
   const [openFor, setOpenFor] = useState(null);
   const [done, setDone] = useState(null);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const load = () =>
-    staffApi
-      .team()
-      .then(setTeam)
+    Promise.all([staffApi.team(), staffApi.staffList()])
+      .then(([t, all]) => {
+        setTeam(t);
+        setClosed(all.filter((p) => !p.is_active));
+      })
       .catch((err) => {
         if (err.message === "SESSION_EXPIRED") navigate("/staff/login");
         else setError(err.message);
@@ -116,7 +119,10 @@ export default function Team() {
 
   return (
     <div className="wrap py-8">
-      <h1 className="text-2xl sm:text-3xl">Your team</h1>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <h1 className="text-2xl sm:text-3xl">Your team</h1>
+        <Link to="/staff/team/new" className="btn-go px-4 py-2 text-sm">+ Add staff</Link>
+      </div>
       <p className="mt-1.5 max-w-prose text-navy-soft">
         Who is carrying what, and who is falling behind. The overdue column is the one to
         watch daily.
@@ -168,6 +174,9 @@ export default function Team() {
                 </td>
                 <td className="p-4 text-navy">{p.enrolled}</td>
                 <td className="p-4 text-right">
+                  <Link to={`/staff/team/${p.id}`} className="mr-4 text-sm font-medium text-navy hover:underline">
+                    Edit
+                  </Link>
                   {p.live > 0 && (
                     <button
                       onClick={() => {
@@ -200,10 +209,29 @@ export default function Team() {
       </div>
 
       <p className="mt-5 max-w-prose text-sm leading-relaxed text-navy-soft">
-        To add a counsellor, or change which countries they receive new students for, use
-        the Django admin at <code>/admin/</code> → Users. New website students go to the
-        counsellor who handles their chosen country and has the fewest open students.
+        New website students go to the counsellor who handles their chosen country and has
+        the fewest open students. Change someone's countries, or reset a forgotten password,
+        with <strong>Edit</strong>.
       </p>
+
+      {closed.length > 0 && (
+        <section className="mt-10">
+          <h2 className="text-xl">Closed accounts</h2>
+          <ul className="mt-3 divide-y divide-rule rounded-lg border border-rule bg-white">
+            {closed.map((p) => (
+              <li key={p.id} className="flex items-center justify-between gap-3 p-4">
+                <span className="text-navy-soft">
+                  {[p.first_name, p.last_name].filter(Boolean).join(" ") || p.username}
+                  <span className="text-sm"> · {p.username}</span>
+                </span>
+                <Link to={`/staff/team/${p.id}`} className="text-sm font-medium text-navy hover:underline">
+                  View / reopen
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }

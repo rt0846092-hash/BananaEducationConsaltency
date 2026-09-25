@@ -646,3 +646,127 @@ class CommissionEditTests(Base):
         self.as_user(self.admin).patch(f"/api/applications/{app.pk}/",
                                        {"status": "submitted"}, format="json")
         self.assertEqual(float(self.as_user(self.admin).get("/api/reports/").json()["pipeline_value"]), 2400)
+
+
+class OwnerManagementTests(Base):
+    """Staff and website content, managed from the staff area."""
+
+    def test_counsellor_is_refused_everywhere(self):
+        c = self.as_user(self.sarita)
+        for path in ["/api/manage/staff/", "/api/manage/countries/", "/api/manage/universities/",
+                     "/api/manage/courses/", "/api/manage/scholarships/", "/api/manage/batches/"]:
+            self.assertEqual(c.get(path).status_code, 403, path)
+            self.assertEqual(c.post(path, {}, format="json").status_code, 403, path)
+        self.assertEqual(c.post(f"/api/manage/staff/{self.mingma.pk}/reset-password/",
+                                {"password": "Whatever-123"}, format="json").status_code, 403)
+        self.assertEqual(c.post(f"/api/leads/{self.s_lead.pk}/delete/",
+                                {"confirm_name": "Anisha"}, format="json").status_code, 403)
+
+    def test_add_counsellor_who_must_then_change_password(self):
+        r = self.as_user(self.admin).post("/api/manage/staff/", {
+            "username": "kiran", "first_name": "Kiran", "email": "k@example.com",
+            "role": "counsellor", "password": "Temporary-Pass-77",
+            "countries": [self.australia.pk], "auto_assign": True,
+        }, format="json")
+        self.assertEqual(r.status_code, 201, r.content)
+        kiran = User.objects.get(username="kiran")
+        self.assertTrue(kiran.must_change_password)
+        self.assertEqual(list(kiran.countries.all()), [self.australia])
+        self.assertNotIn("password", r.json())
+        login = self.client.post("/api/auth/login/", {"username": "kiran",
+                                 "password": "Temporary-Pass-77"}, format="json")
+        self.assertEqual(login.status_code, 200)
+
+    def test_add_staff_validation(self):
+        c = self.as_user(self.admin)
+        self.assertEqual(c.post("/api/manage/staff/", {"username": "SARITA", "password": "Ok-Pass-12345"},
+                                format="json").status_code, 400)
+        self.assertEqual(c.post("/api/manage/staff/", {"username": "new1", "password": "123"},
+                                format="json").status_code, 400)
+        self.assertEqual(c.post("/api/manage/staff/", {"username": "new2"},
+                                format="json").status_code, 400)
+
+    def test_edit_countries_and_role(self):
+        c = self.as_user(self.admin)
+        r = c.patch(f"/api/manage/staff/{self.mingma.pk}/",
+                    {"countries": [self.australia.pk], "auto_assign": False}, format="json")
+        self.assertEqual(r.status_code, 200)
+        self.mingma.refresh_from_db()
+        self.assertFalse(self.mingma.auto_assign)
+        r = c.patch(f"/api/manage/staff/{self.admin.pk}/", {"role": "counsellor"}, format="json")
+        self.assertEqual(r.status_code, 400)
+
+    def test_reset_password_forces_change_and_signs_out(self):
+        c = self.as_user(self.admin)
+        r = c.post(f"/api/manage/staff/{self.sarita.pk}/reset-password/",
+                   {"password": "Fresh-Temp-2026"}, format="json")
+        self.assertEqual(r.status_code, 200)
+        self.sarita.refresh_from_db()
+        self.assertTrue(self.sarita.must_change_password)
+        self.assertTrue(self.sarita.check_password("Fresh-Temp-2026"))
+        self.assertIsNotNone(self.sarita.password_changed_at)
+        self.assertEqual(c.post(f"/api/manage/staff/{self.admin.pk}/reset-password/",
+                                {"password": "Fresh-Temp-2026"}, format="json").status_code, 400)
+
+    def test_close_account_guards(self):
+        c = self.as_user(self.admin)
+        # Has open students: must use hand over
+        r = c.post(f"/api/manage/staff/{self.sarita.pk}/deactivate/")
+        self.assertEqual(r.status_code, 400)
+        self.assertIn("Hand over", r.json()["detail"])
+        self.assertEqual(c.post(f"/api/manage/staff/{self.admin.pk}/deactivate/").status_code, 400)
+        Lead.objects.filter(assigned_to=self.mingma).update(status="lost")
+        self.assertEqual(c.post(f"/api/manage/staff/{self.mingma.pk}/deactivate/").status_code, 200)
+        self.mingma.refresh_from_db()
+        self.assertFalse(self.mingma.is_active)
+        self.assertEqual(c.post(f"/api/manage/staff/{self.mingma.pk}/reactivate/").status_code, 200)
+        self.mingma.refresh_from_db()
+        self.assertTrue(self.mingma.is_active)
+
+    def test_content_crud_shows_on_public_site(self):
+        c = self.as_user(self.admin)
+        r = c.post("/api/manage/countries/", {"name": "New Zealand", "summary": "Kiwi.",
+                                              "sort_order": 9}, format="json")
+        self.assertEqual(r.status_code, 201, r.content)
+        nz = r.json()
+        self.assertEqual(nz["slug"], "new-zealand")
+        uni = c.post("/api/manage/universities/", {"country": nz["id"], "name": "Otago",
+                                                   "city": "Dunedin"}, format="json").json()
+        c.post("/api/manage/courses/", {"university": uni["id"], "name": "MSc", "level": "master",
+                                        "tuition_fee": "30000", "currency": "NZD"}, format="json")
+        c.post(f"/api/manage/universities/{uni['id']}/mark-checked/")
+        c.post("/api/manage/scholarships/", {"country": nz["id"], "name": "Kiwi award"},
+               format="json")
+        public = self.client.get("/api/countries/new-zealand/").json()
+        self.assertEqual(public["universities"][0]["courses"][0]["currency"], "NZD")
+        self.assertEqual(public["universities"][0]["last_verified_on"], str(timezone.localdate()))
+        self.assertEqual(public["scholarships"][0]["name"], "Kiwi award")
+        # Hide it
+        c.patch(f"/api/manage/countries/{nz['id']}/", {"is_active": False}, format="json")
+        self.assertEqual(self.client.get("/api/countries/new-zealand/").status_code, 404)
+
+    def test_cannot_delete_content_students_depend_on(self):
+        c = self.as_user(self.admin)
+        self.s_lead.interested_countries.set([self.australia])
+        self.assertEqual(c.delete(f"/api/manage/countries/{self.australia.pk}/").status_code, 400)
+        uni = University.objects.create(country=self.australia, name="Deakin")
+        Application.objects.create(lead=self.s_lead, university=uni)
+        self.assertEqual(c.delete(f"/api/manage/universities/{uni.pk}/").status_code, 400)
+        self.assertEqual(c.delete(f"/api/manage/countries/{self.hidden.pk}/").status_code, 204)
+
+    def test_batches(self):
+        c = self.as_user(self.admin)
+        r = c.post("/api/manage/batches/", {"test_type": "ielts", "start_date":
+                   str(timezone.localdate() + timedelta(days=5)), "total_seats": 20,
+                   "seats_taken": 18}, format="json")
+        self.assertEqual(r.status_code, 201, r.content)
+        self.assertEqual(self.client.get("/api/batches/").json()[0]["seats_left"], 2)
+
+    def test_delete_student_needs_exact_name(self):
+        c = self.as_user(self.admin)
+        self.assertEqual(c.post(f"/api/leads/{self.s_lead.pk}/delete/",
+                                {"confirm_name": "anisha "}, format="json").status_code, 400)
+        r = c.post(f"/api/leads/{self.s_lead.pk}/delete/", {"confirm_name": "Anisha"},
+                   format="json")
+        self.assertEqual(r.status_code, 200)
+        self.assertFalse(Lead.objects.filter(pk=self.s_lead.pk).exists())

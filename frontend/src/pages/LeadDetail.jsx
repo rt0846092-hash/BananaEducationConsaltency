@@ -349,6 +349,56 @@ function Documents({ lead, me, onChange, onError: raise }) {
   );
 }
 
+/**
+ * Owner only. For a student who asks for their data to be removed, or to
+ * clear sample students before going live. Typing the name is the safety
+ * catch — there is no undo. Someone who simply went quiet should be "Lost".
+ */
+function DeleteStudent({ lead, onDeleted }) {
+  const [open, setOpen] = useState(false);
+  const [typed, setTyped] = useState("");
+  const [error, setError] = useState("");
+
+  async function remove(e) {
+    e.preventDefault();
+    try {
+      await staffApi.deleteLead(lead.id, typed);
+      onDeleted();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  return (
+    <section className="mt-12 rounded-lg border border-urgent/30 p-5">
+      <h2 className="text-base text-urgent">Delete this student</h2>
+      <p className="mt-1 text-sm leading-relaxed text-navy-soft">
+        Removes them completely: details, call log, applications and documents. Use it when a
+        student asks for their data to be deleted, or for sample students. If they just
+        stopped replying, set the stage to Lost instead.
+      </p>
+      {!open ? (
+        <button className="btn-quiet mt-4 text-urgent" onClick={() => setOpen(true)}>Delete student…</button>
+      ) : (
+        <form onSubmit={remove} className="mt-4 space-y-3">
+          <label className="label" htmlFor="confirm-name">
+            Type <strong>{lead.full_name}</strong> to confirm
+          </label>
+          <input id="confirm-name" className="field max-w-md" autoComplete="off" value={typed}
+                 onChange={(e) => setTyped(e.target.value)} />
+          {error && <p className="text-sm text-urgent">{error}</p>}
+          <div className="flex gap-3">
+            <button className="btn-go bg-urgent hover:bg-urgent" disabled={typed.trim() !== lead.full_name.trim()}>
+              Delete permanently
+            </button>
+            <button type="button" className="btn-quiet" onClick={() => { setOpen(false); setTyped(""); }}>Cancel</button>
+          </div>
+        </form>
+      )}
+    </section>
+  );
+}
+
 export default function LeadDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -594,6 +644,10 @@ export default function LeadDetail() {
             ))}
           </ol>
         </section>
+      )}
+
+      {me?.is_admin && (
+        <DeleteStudent lead={lead} onDeleted={() => navigate("/staff", { replace: true })} />
       )}
     </div>
   );

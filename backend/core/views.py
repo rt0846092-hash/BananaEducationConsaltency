@@ -1,4 +1,5 @@
 import csv
+import logging
 import mimetypes
 from datetime import timedelta
 
@@ -54,6 +55,7 @@ class Login(TokenObtainPairView):
 
 
 CLOSED = [Lead.Status.ENROLLED, Lead.Status.LOST]
+log = logging.getLogger(__name__)
 
 # Step two is reached with a signed token, not a database ID. IDs are
 # sequential, so an ID-based URL let a stranger walk the range and overwrite
@@ -765,6 +767,28 @@ def reports(request):
             .annotate(count=Count("id")).order_by("-count")[:8]
         ),
     })
+
+
+@api_view(["POST"])
+@permission_classes([IsAdmin])
+def delete_lead(request, pk):
+    """Permanently remove a student and everything about them.
+
+    For a student who asks for their data to be deleted (the privacy page
+    promises this), and for clearing sample data before going live. Owner
+    only, and the full name must be typed to confirm — there is no undo.
+    For anyone who simply stopped replying, set the stage to Lost instead.
+    """
+    lead = get_object_or_404(Lead, pk=pk)
+    if (request.data.get("confirm_name") or "").strip() != lead.full_name.strip():
+        return Response({"detail": "Type the student's full name exactly to confirm."},
+                        status=status.HTTP_400_BAD_REQUEST)
+    name = lead.full_name
+    for doc in lead.documents.all():
+        doc.file.delete(save=False)
+    lead.delete()
+    log.info("Student %s (id %s) deleted by %s", name, pk, request.user.username)
+    return Response({"detail": f"{name} and all their records were deleted."})
 
 
 @api_view(["GET"])

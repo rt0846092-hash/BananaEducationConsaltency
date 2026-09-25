@@ -133,5 +133,31 @@ export const staffApi = {
   handover: (data) =>
     authFetch("/team/handover/", { method: "POST", body: JSON.stringify(data) }),
   reports: (query = "") => authFetch(`/reports/${query}`),
+  deleteLead: (id, confirmName) =>
+    authFetch(`/leads/${id}/delete/`, { method: "POST", body: JSON.stringify({ confirm_name: confirmName }) }),
+
+  // Owner only: staff accounts
+  staffList: () => authFetch("/manage/staff/"),
+  staffGet: (id) => authFetch(`/manage/staff/${id}/`),
+  staffAdd: (data) => authFetch("/manage/staff/", { method: "POST", body: JSON.stringify(data) }),
+  staffUpdate: (id, data) =>
+    authFetch(`/manage/staff/${id}/`, { method: "PATCH", body: JSON.stringify(data) }),
+  staffResetPassword: (id, password) =>
+    authFetch(`/manage/staff/${id}/reset-password/`, { method: "POST", body: JSON.stringify({ password }) }),
+  staffDeactivate: (id) => authFetch(`/manage/staff/${id}/deactivate/`, { method: "POST" }),
+  staffReactivate: (id) => authFetch(`/manage/staff/${id}/reactivate/`, { method: "POST" }),
   exportCsv: (query = "") => authDownload(`/leads/export/${query}`, "students.csv"),
 };
+
+/**
+ * Owner only: the public website's content. One small client per kind of
+ * thing — countries, universities, courses, scholarships, batches.
+ */
+export const content = (kind) => ({
+  list: (query = "") => authFetch(`/manage/${kind}/${query}`),
+  add: (data) => authFetch(`/manage/${kind}/`, { method: "POST", body: JSON.stringify(data) }),
+  update: (id, data) =>
+    authFetch(`/manage/${kind}/${id}/`, { method: "PATCH", body: JSON.stringify(data) }),
+  remove: (id) => authFetch(`/manage/${kind}/${id}/`, { method: "DELETE" }),
+  action: (id, name) => authFetch(`/manage/${kind}/${id}/${name}/`, { method: "POST" }),
+});

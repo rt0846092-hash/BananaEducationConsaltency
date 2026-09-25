@@ -33,6 +33,12 @@ sees everything, plus the one number that matters — how many leads nobody has 
 | Record expected commission | | | | ✓ |
 | Assign and reassign students, hand over a whole caseload | | | | ✓ |
 | Team workload, reports with date ranges, CSV export (logged) | | | | ✓ |
+| Add staff, edit their countries, reset passwords, close/reopen accounts (**Team**) | | | | ✓ |
+| Edit destinations, universities, courses and fees, scholarships, classes (**Website**) | | | | ✓ |
+| Permanently delete a student's data on request (typed confirmation) | | | | ✓ |
+
+Everything above is in the staff area. The Django admin (`/admin/` on the API) is still
+there for emergencies but the office never needs it.
 
 ### What happens when a student fills in the form
 
@@ -207,7 +213,7 @@ list.
 Or let the tests check it for you, as every role:
 
 ```bash
-cd backend && python manage.py test core      # 58 API tests: viewer, student, staff, admin
+cd backend && python manage.py test core      # 74 API tests: viewer, student, staff, admin
 ```
 
 `e2e/personas.py` drives a real browser through the same four roles (see the
