@@ -23,14 +23,16 @@ function setMeta(selector, attr, name, value) {
 }
 
 /**
- * usePageMeta({ title, description, noindex })
+ * usePageMeta({ title, fullTitle, description, noindex })
  * title        — shown as the blue link in Google; the office name is added.
+ * fullTitle    — used as-is instead (the home page leads with the brand).
  * description  — the grey text under it (aim for 120–160 characters).
  * noindex      — keep this page out of search results (staff area, 404s).
  */
-export function usePageMeta({ title, description, noindex = false }) {
+export function usePageMeta({ title, fullTitle, description, noindex = false }) {
   useEffect(() => {
-    document.title = title ? `${title} | ${OFFICE.name}` : `${OFFICE.name} — study abroad counselling`;
+    document.title = fullTitle
+      || (title ? `${title} | ${OFFICE.name}` : `${OFFICE.name} — study abroad counselling`);
     setMeta('meta[name="description"]', "name", "description", description);
     setMeta('meta[property="og:title"]', "property", "og:title", document.title);
     if (description) setMeta('meta[property="og:description"]', "property", "og:description", description);
@@ -38,5 +40,5 @@ export function usePageMeta({ title, description, noindex = false }) {
     // One address per page, so Google doesn't treat ?src=fair-jan as a copy.
     setMeta('link[rel="canonical"]', "rel", "canonical",
             noindex ? "" : window.location.origin + window.location.pathname);
-  }, [title, description, noindex]);
+  }, [title, fullTitle, description, noindex]);
 }

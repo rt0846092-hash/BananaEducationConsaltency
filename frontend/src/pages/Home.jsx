@@ -47,9 +47,10 @@ export default function Home() {
   const [batches, setBatches] = useState([]);
   const [counsellors, setCounsellors] = useState([]);
   const [failed, setFailed] = useState(false);
+  // Brand first: most people reach the home page by searching the name.
   usePageMeta({
-    title: "Study abroad counselling in Kathmandu",
-    description: `Free counselling for studying in Australia, the USA, the UK, South Korea and Europe. Universities, fees, scholarships and IELTS/PTE classes at ${OFFICE.name}.`,
+    fullTitle: `${OFFICE.name} Consultancy — Study Abroad Counselling in Kathmandu`,
+    description: `${OFFICE.name} Consultancy: free counselling for studying in Australia, the USA, the UK, South Korea and Europe. Universities, fees, scholarships and IELTS/PTE classes.`,
   });
 
   useEffect(() => {
@@ -62,23 +63,19 @@ export default function Home() {
       .catch(() => setFailed(true));
   }, []);
 
-  if (failed) {
-    return (
-      <div className="wrap py-24 text-center">
-        <h1 className="text-2xl">{t("The site can't reach our servers")}</h1>
-        <p className="mx-auto mt-3 max-w-prose text-navy-soft">
-          {t("Call us on {phone} and we'll help you straight away.", { phone: OFFICE.phone })}
-        </p>
-      </div>
-    );
-  }
-
+  // If the API is down or still waking up, the rest of the page still shows,
+  // with a note where the destinations would be. Replacing the whole page
+  // with an error meant Google could index "can't reach our servers" as the
+  // home page.
   return (
     <>
       {/* The hero is the first question of the form, not a picture of
           graduates throwing their caps. */}
       <section className="border-b border-rule bg-white">
         <div className="wrap py-16 sm:py-20">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-grass">
+            {OFFICE.name} Consultancy · {t("Study abroad counselling")}
+          </p>
           <h1 className="max-w-prose text-3xl leading-tight sm:text-5xl sm:leading-[1.15]">
             {t("Where do you want to study?")}
           </h1>
@@ -89,6 +86,13 @@ export default function Home() {
           <div className="mt-8">
             {countries.length ? (
               <Destinations countries={countries} />
+            ) : failed ? (
+              <div className="rounded-lg border border-rule bg-paper p-5">
+                <p className="font-medium text-navy-deep">{t("The site can't reach our servers")}</p>
+                <p className="mt-1 text-navy-soft">
+                  {t("Call us on {phone} and we'll help you straight away.", { phone: OFFICE.phone })}
+                </p>
+              </div>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {[0, 1, 2, 3, 4].map((i) => (

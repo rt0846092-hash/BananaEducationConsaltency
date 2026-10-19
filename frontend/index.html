@@ -4,8 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Banana Education — study abroad counselling</title>
-    <meta name="description" content="Free counselling for students applying to universities in Australia, the USA, the UK, South Korea and Europe." />
+    <!-- The brand goes first: people find this site by searching its name. -->
+    <title>Banana Education Consultancy — Study Abroad Counselling in Kathmandu</title>
+    <meta name="description" content="Banana Education Consultancy offers free counselling for students applying to universities in Australia, the USA, the UK, South Korea and Europe, plus IELTS, PTE and TOPIK classes." />
 
     <!-- SVG scales to any size and stays sharp; the .ico is the fallback for
          older browsers and the bookmarks bar. -->
@@ -18,7 +19,8 @@
     <!-- These consultancies market on Facebook and WhatsApp, so the shared
          link IS the advert. Without an og:image the preview is a grey box. -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Banana Education — study abroad counselling" />
+    <meta property="og:site_name" content="Banana Education" />
+    <meta property="og:title" content="Banana Education Consultancy — Study Abroad Counselling in Kathmandu" />
     <meta property="og:description" content="Free counselling for students applying to universities in Australia, the USA, the UK, South Korea and Europe." />
     <meta property="og:image" content="/og-image.png" />
     <meta property="og:image:width" content="1200" />
@@ -30,7 +32,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <div id="root"></div>
+    <!-- Real text before the app loads. React replaces it on start-up, but
+         crawlers that don't run JavaScript (and Google's first pass, which
+         does) see the business name and what it does instead of an empty div. -->
+    <div id="root">
+      <main class="wrap py-16">
+        <h1 class="text-3xl">Banana Education Consultancy</h1>
+        <p class="mt-4 max-w-prose text-lg">
+          Free study abroad counselling in Kathmandu for universities in
+          Australia, the USA, the UK, South Korea and Europe — applications,
+          scholarships, student visas, and IELTS, PTE and TOPIK classes.
+        </p>
+        <ul class="mt-6">
+          <li><a href="/apply">Book free counselling</a></li>
+          <!--destinations-->
+        </ul>
+      </main>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
